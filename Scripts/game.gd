@@ -27,38 +27,27 @@ func resetBoard():
 		for j in range(SIZE):
 			board[i].append(0)
 
-	# remove all tiles instances
-	for i in range(get_node("Tiles").get_child_count()):
-		get_node("Tiles").get_child(i).queue_free()
-
 	# add 2 random tiles
 	addRandomTile()
 	addRandomTile()
 
-	for i in range(SIZE):
-		print(board[i])
-	print("----------------")
+	# update graphic
+	drawGraphic()
 
 
 func addRandomTile():
 	var emptySpaces = []
 
 	# save empty space coordinates
-	for y in range(SIZE):
-		for x in range(SIZE):
-			if board[x][y] == 0:
-				emptySpaces.append(Vector2(x, y))
+	for row in range(SIZE):
+		for col in range(SIZE):
+			if board[row][col] == 0:
+				emptySpaces.append(Vector2(row, col))
 
 	if emptySpaces.size() > 0:
 		var target = emptySpaces[randi() % emptySpaces.size()]
 		var number = 2 if randf() < 0.9 else 4
-		board[target.y][target.x] = number
-
-		var newTile = tile.instantiate()
-		newTile.value = number
-		newTile.position = Vector2(target.x * 32, target.y * 32)
-
-		get_node("Tiles").add_child(newTile)
+		board[target.x][target.y] = number
 
 
 func mergeTilesToLeft(line: Array) -> Array:
@@ -92,12 +81,6 @@ func mergeBoardToLeft():
 	for i in range(SIZE):
 		board[i] = mergeTilesToLeft(board[i])
 
-	if isGameOver():
-		print("Game Over")
-		resetBoard()
-	else:
-		addRandomTile()
-
 
 func moveTiles(direction: Vector2):
 	if direction == Vector2.LEFT:
@@ -118,9 +101,22 @@ func moveTiles(direction: Vector2):
 		rotateBoardClockwise(3)
 		pass
 
-	for i in range(SIZE):
-		print(board[i])
-	print("----------------")
+	if isFull():
+		var isGameOver = true
+		for i in range(SIZE):
+			for j in range(SIZE):
+				if j < SIZE - 1 and board[i][j] == board[i][j + 1]:
+					isGameOver = false
+					break
+				if i < SIZE - 1 and board[i][j] == board[i + 1][j]:
+					isGameOver = false
+					break
+		if isGameOver:
+			print("Game Over")
+	else:
+		addRandomTile()
+
+	drawGraphic()
 
 
 func rotateBoardClockwise(times: int):
@@ -136,7 +132,7 @@ func rotateBoardClockwise(times: int):
 		board = rotatedBoard
 
 
-func isGameOver() -> bool:
+func isFull() -> bool:
 	for i in range(SIZE):
 		for j in range(SIZE):
 			if board[i][j] == 0:
@@ -144,5 +140,19 @@ func isGameOver() -> bool:
 	return true
 
 
-func tileGraphic():
-	pass
+func drawGraphic():
+	# remove all tiles instances
+	for i in range(get_node("Tiles").get_child_count()):
+		get_node("Tiles").get_child(i).queue_free()
+
+	for row in range(SIZE):
+		for col in range(SIZE):
+			if board[row][col] != 0:
+				var newTile = tile.instantiate()
+				newTile.value = board[row][col]
+				newTile.position = Vector2(col * 32, row * 32)
+				get_node("Tiles").add_child(newTile)
+
+	for i in range(SIZE):
+		print(board[i])
+	print("----------------")
