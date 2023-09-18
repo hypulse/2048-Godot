@@ -21,6 +21,8 @@ func _process(_delta):
 
 
 func resetBoard():
+	board = []
+
 	# fill board with 0
 	for i in range(SIZE):
 		board.append([])
@@ -113,6 +115,8 @@ func moveTiles(direction: Vector2):
 					break
 		if isGameOver:
 			print("Game Over")
+			resetBoard()
+			return
 	else:
 		addRandomTile()
 
